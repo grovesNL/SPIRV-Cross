@@ -1828,7 +1828,17 @@ string CompilerHLSL::to_resource_binding(const SPIRVariable &var)
 	if (!space)
 		return "";
 
-	return join(" : register(", space, get_decoration(var.self, DecorationBinding), ")");
+	const auto binding = get_decoration(var.self, DecorationBinding);
+
+	// Map `DescriptorSet` to `spaceN` if available
+	if (options.shader_model >= 51 && has_decoration(var.self, DecorationDescriptorSet))
+	{
+		return join(" : register(", space, binding, ", space", get_decoration(var.self, DecorationDescriptorSet), ")");
+	}
+	else
+	{
+		return join(" : register(", space, binding, ")");
+	}
 }
 
 string CompilerHLSL::to_resource_binding_sampler(const SPIRVariable &var)
